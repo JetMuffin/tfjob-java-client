@@ -9,6 +9,7 @@ public final class JobConstants {
   public static final String KUBEFLOW_RESOURCE_CPU = "cpu";
   public static final String KUBEFLOW_RESOURCE_MEMORY = "memory";
   public static final String KUBEFLOW_RESOURCE_PATH_ENV = "RESOURCE_PATH";
+  public static final String KUBEFLOW_LABEL_USER = "user";
 
   public static final String DEFAULT_NAMESPACE = "default";
   public static final String SCRIPT_REMOTE_PATH_PREFIX = "/tmp";

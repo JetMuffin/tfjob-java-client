@@ -1,5 +1,6 @@
 package org.kubeflow.client.model;
 
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
 import static org.kubeflow.client.model.JobConstants.SCRIPT_REMOTE_PATH_PREFIX;
 
 import io.kubernetes.client.models.*;
@@ -40,9 +41,11 @@ public class Job {
 
   public String getUser() {
     Map<String, String> labels = this.tfjob.getMetadata().getLabels();
-    if (labels == null) return null;
-    if (labels.containsKey("user")) {
-      return labels.get("user");
+    if (labels == null) {
+        return null;
+    }
+    if (labels.containsKey(KUBEFLOW_LABEL_USER)) {
+      return labels.get(KUBEFLOW_LABEL_USER);
     }
     return null;
   }
