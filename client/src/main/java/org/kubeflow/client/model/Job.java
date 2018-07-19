@@ -42,7 +42,7 @@ public class Job {
   public String getUser() {
     Map<String, String> labels = this.tfjob.getMetadata().getLabels();
     if (labels == null) {
-        return null;
+      return null;
     }
     if (labels.containsKey(KUBEFLOW_LABEL_USER)) {
       return labels.get(KUBEFLOW_LABEL_USER);
