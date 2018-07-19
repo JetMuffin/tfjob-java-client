@@ -98,6 +98,12 @@ public class Job {
   }
 
   public TFReplica getPs() {
+    if (!this.tfjob
+        .getSpec()
+        .getTfReplicaSpecs()
+        .containsKey(JobConstants.KUBEFLOW_PS_REPLICA_NAME)) {
+      return null;
+    }
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_PS_REPLICA_NAME));
   }
@@ -110,6 +116,12 @@ public class Job {
   }
 
   public TFReplica getWorker() {
+    if (!this.tfjob
+        .getSpec()
+        .getTfReplicaSpecs()
+        .containsKey(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME)) {
+      return null;
+    }
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME));
   }

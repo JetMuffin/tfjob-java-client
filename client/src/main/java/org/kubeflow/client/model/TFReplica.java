@@ -52,6 +52,9 @@ public class TFReplica {
   }
 
   public int getReplicas() {
+    if (this.spec.getReplicas() == null) {
+      return 0;
+    }
     return this.spec.getReplicas();
   }
 

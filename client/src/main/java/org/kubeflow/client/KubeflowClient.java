@@ -65,17 +65,10 @@ public class KubeflowClient {
    * create a job
    *
    * @param job (required)
-<<<<<<< 87e3086de4019f2509c74ed1fc65651cdfe917d0
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-  public void submitJob(Job job) throws KubeflowException {
-=======
-   * @throws ClientException If fail to call the API, e.g. server error or cannot deserialize the
-   *     response body
-   */
-  public void submitJob(Job job) throws ClientException, IOException {
->>>>>>> Upload script to hdfs then create tfjob
+  public void submitJob(Job job) throws KubeflowException, IOException {
     submitJob(job, this.defaultNamespace);
   }
 
@@ -87,44 +80,32 @@ public class KubeflowClient {
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-<<<<<<< 87e3086de4019f2509c74ed1fc65651cdfe917d0
-  public void submitJob(Job job, String namespace) throws KubeflowException {
+  public void submitJob(Job job, String namespace) throws KubeflowException, IOException {
+    // validate this job
     if (validateJob(job)) {
-      V1alpha2TFJob tfjob = job.getTfjob();
+      if (this.storage == null) {
+        throw new KubeflowException("Need to specify a storage backend, e.g. hdfs.");
+      }
       try {
+        job.namespace(namespace);
+
+        // submit script to remote storage backend
+        String remoteScriptPath = job.getRemoteScriptPath();
+        if (remoteScriptPath != null) {
+          this.storage.upload(job.getScript(), remoteScriptPath);
+        }
+
+        // set `RESOURCE_PATH` env to TFReplicas
+        String remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
+        job.getPs().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
+        job.getWorker().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
+
+        // submit job to kubeflow
+        V1alpha2TFJob tfjob = job.getTfjob();
         job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
       } catch (ApiException e) {
         throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
       }
-=======
-  public void submitJob(Job job, String namespace) throws ClientException, IOException {
-    // validate this job and throw exception
-    if (!validateJob(job)) {
-      throw new ClientException("Invalid job: missing required fileds.");
-    }
-    if (this.storage == null) {
-      throw new ClientException("Need to specify a storage backend, e.g. hdfs.");
-    }
-    try {
-      job.namespace(namespace);
-
-      // submit script to remote storage backend
-      String remoteScriptPath = job.getRemoteScriptPath();
-      if (remoteScriptPath != null) {
-        this.storage.upload(job.getScript(), remoteScriptPath);
-      }
-
-      // set `RESOURCE_PATH` env to TFReplicas
-      String remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
-      job.getPs().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
-      job.getWorker().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
-
-      // submit job to kubeflow
-      V1alpha2TFJob tfjob = job.getTfjob();
-      job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
-    } catch (ApiException e) {
-      throw new ClientException("Cannot connect to kubernetes api: " + e.getMessage());
->>>>>>> Upload script to hdfs then create tfjob
     }
   }
 
@@ -196,11 +177,7 @@ public class KubeflowClient {
    *
    * @param name name of job
    * @return success or not
-<<<<<<< 87e3086de4019f2509c74ed1fc65651cdfe917d0
    * @throws KubeflowException
-=======
-   * @throws ClientException
->>>>>>> Upload script to hdfs then create tfjob
    */
   public void deleteJob(String name) throws KubeflowException {
     deleteJob(name, this.defaultNamespace);

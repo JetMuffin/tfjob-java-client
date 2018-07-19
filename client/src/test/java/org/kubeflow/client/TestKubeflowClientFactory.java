@@ -38,7 +38,6 @@ public class TestKubeflowClientFactory {
   public void testNewInstanceWithKubeconfig() throws IOException {
     ClassLoader classLoader = getClass().getClassLoader();
     File file = new File(classLoader.getResource(kubeconfigPath).getFile());
-    System.out.println(file.getAbsolutePath());
     KubeflowClient client = KubeflowClientFactory.newInstanceFromConfig(file.getAbsolutePath());
 
     String expectedNamespace = "new-default";
