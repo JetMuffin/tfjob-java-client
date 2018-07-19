@@ -38,7 +38,6 @@ public class Example {
                   "--train_tfrecords=hdfs://100.81.153.173:8020/tmp/train.tfrecords --test_tfrecords=hdfs://100.81.153.173:8020/tmp/test.tfrecords");
       Job job =
           new Job()
-              .name("sdk-job")
               .user("mofeng")
               .ps(ps)
               .worker(worker)

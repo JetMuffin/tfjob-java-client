@@ -94,7 +94,7 @@ public class JobTest {
     Job job =
         new Job().user("usertest").name("train").namespace("work").script("/tmp/train.tar.gz");
     String expect =
-        SCRIPT_REMOTE_PATH_PREFIX + "/usertest/work/train/" + job.getUUID() + "/train.tar.gz";
+        SCRIPT_REMOTE_PATH_PREFIX + "/usertest/work/tfjob/" + job.getUUID() + "/train.tar.gz";
 
     assertEquals(expect, job.getRemoteScriptPath());
   }

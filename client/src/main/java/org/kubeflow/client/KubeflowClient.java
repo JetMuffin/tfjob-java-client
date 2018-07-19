@@ -1,5 +1,6 @@
 package org.kubeflow.client;
 
+import static org.kubeflow.client.model.JobConstants.DEFAULT_GENERATE_NAME;
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_RESOURCE_PATH_ENV;
 
 import io.kubernetes.client.models.V1DeleteOptions;
@@ -35,9 +36,6 @@ public class KubeflowClient {
   }
 
   private boolean validateJob(Job job) throws KubeflowException {
-    if (job.getName() == null) {
-      throw new KubeflowException("Invalid job: missing 'name' field.");
-    }
     if (job.getScript() == null) {
       throw new KubeflowException("Invalid job: missing 'script' field.");
     }
@@ -88,6 +86,9 @@ public class KubeflowClient {
       }
       try {
         job.namespace(namespace);
+        if (job.getName() == null) {
+          job.generateName(DEFAULT_GENERATE_NAME);
+        }
 
         // submit script to remote storage backend
         String remoteScriptPath = job.getRemoteScriptPath();

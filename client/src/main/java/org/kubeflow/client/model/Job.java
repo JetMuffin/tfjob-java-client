@@ -1,5 +1,6 @@
 package org.kubeflow.client.model;
 
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
 import static org.kubeflow.client.model.JobConstants.SCRIPT_REMOTE_PATH_PREFIX;
 
@@ -61,6 +62,15 @@ public class Job {
 
   public String getName() {
     return this.tfjob.getMetadata().getName();
+  }
+
+  public Job generateName(String generateName) {
+    this.tfjob.getMetadata().generateName(generateName);
+    return this;
+  }
+
+  public String getGenerateName(String generateName) {
+    return this.tfjob.getMetadata().getGenerateName();
   }
 
   public Job namespace(String namespace) {
@@ -128,14 +138,13 @@ public class Job {
 
   /**
    * Path to access script in remote storage backend in the form of
-   * `/sigma/user/namespace/name/uuid/script`
+   * `/sigma/<user>/<namespace>/tfjob/<uuid>/`
    *
    * @return this path
    */
   public String getRemoteScriptPath() {
     if (this.getUser() == null
         || this.getNamespace() == null
-        || this.getName() == null
         || this.getScript() == null
         || this.getUUID() == null) {
       return null;
@@ -147,7 +156,7 @@ public class Job {
             SCRIPT_REMOTE_PATH_PREFIX,
             this.getUser(),
             this.getNamespace(),
-            this.getName(),
+            KUBEFLOW_JOB_KIND.toLowerCase(),
             this.getUUID(),
             file);
 
