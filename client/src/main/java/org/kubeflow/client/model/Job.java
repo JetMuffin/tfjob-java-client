@@ -8,6 +8,8 @@ import org.kubeflow.client.models.V1alpha2TFJobSpec;
 public class Job {
   private V1alpha2TFJob tfjob;
 
+  private String script;
+
   public Job() {
     this.tfjob =
         new V1alpha2TFJob()
@@ -45,6 +47,24 @@ public class Job {
 
   public String getName() {
     return this.tfjob.getMetadata().getName();
+  }
+
+  public Job namespace(String namespace) {
+    this.tfjob.getMetadata().namespace(namespace);
+    return this;
+  }
+
+  public String getNamespace() {
+    return this.tfjob.getMetadata().getNamespace();
+  }
+
+  public Job script(String script) {
+    this.script = script;
+    return this;
+  }
+
+  public String getScript() {
+    return this.script;
   }
 
   public Job cleanupPolicy(String cleanupPolicy) {
