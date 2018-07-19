@@ -1,6 +1,7 @@
 package org.kubeflow.client.model;
 
 import io.kubernetes.client.models.*;
+import java.util.Map;
 import org.kubeflow.client.models.V1alpha2TFJob;
 import org.kubeflow.client.models.V1alpha2TFJobSpec;
 
@@ -22,6 +23,19 @@ public class Job {
 
   public void setTfjob(V1alpha2TFJob tfjob) {
     this.tfjob = tfjob;
+  }
+
+  public Job user(String user) {
+    this.tfjob.getMetadata().putLabelsItem("user", user);
+    return this;
+  }
+
+  public String getUser() {
+    Map<String, String> labels = this.tfjob.getMetadata().getLabels();
+    if (labels.containsKey("user")) {
+      return labels.get("user");
+    }
+    return null;
   }
 
   public Job name(String name) {
