@@ -5,7 +5,7 @@ import io.kubernetes.client.models.V1Status;
 import java.util.ArrayList;
 import java.util.List;
 import org.kubeflow.client.apis.KubeflowOrgV1alpha2Api;
-import org.kubeflow.client.exception.ClientException;
+import org.kubeflow.client.exception.KubeflowException;
 import org.kubeflow.client.model.Job;
 import org.kubeflow.client.model.JobConstants;
 import org.kubeflow.client.models.V1alpha2TFJob;
@@ -28,19 +28,20 @@ public class KubeflowClient {
     return this.defaultNamespace;
   }
 
-  private boolean validateJob(Job job) {
-    if (job.getName() == null || job.getNamespace() == null) {
-      return false;
+  private boolean validateJob(Job job) throws KubeflowException {
+    if (job.getName() == null) {
+      throw new KubeflowException("Invalid job: missing 'name' field.");
     }
     if (job.getScript() == null) {
-      return false;
+      throw new KubeflowException("Invalid job: missing 'script' field.");
     }
-    if (job.getPs() == null || job.getWorker() == null) {
-      return false;
+    if (job.getPs() == null || job.getPs().getReplicas() <= 0) {
+      throw new KubeflowException("Must specify at least one PS.");
     }
-    if (job.getPs().getReplicas() <= 0 || job.getWorker().getReplicas() <= 0) {
-      return false;
+    if (job.getWorker() == null || job.getWorker().getReplicas() <= 0) {
+      throw new KubeflowException("Must specify at least one Worker.");
     }
+
     return true;
   }
 
@@ -48,10 +49,10 @@ public class KubeflowClient {
    * create a job
    *
    * @param job (required)
-   * @throws ApiException If fail to call the API, e.g. server error or cannot deserialize the
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-  public void submitJob(Job job) throws ClientException {
+  public void submitJob(Job job) throws KubeflowException {
     submitJob(job, this.defaultNamespace);
   }
 
@@ -60,18 +61,17 @@ public class KubeflowClient {
    *
    * @param job (required)
    * @param namespace object name and auth scope, such as for teams and projects
-   * @throws ClientException If fail to call the API, e.g. server error or cannot deserialize the
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-  public void submitJob(Job job, String namespace) throws ClientException {
-    if (!validateJob(job)) {
-      throw new ClientException("Invalid job: missing required fileds.");
-    }
-    V1alpha2TFJob tfjob = job.getTfjob();
-    try {
-      job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
-    } catch (ApiException e) {
-      throw new ClientException("Cannot connect to kubernetes api: " + e.getMessage());
+  public void submitJob(Job job, String namespace) throws KubeflowException {
+    if (validateJob(job)) {
+      V1alpha2TFJob tfjob = job.getTfjob();
+      try {
+        job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
+      } catch (ApiException e) {
+        throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
+      }
     }
   }
 
@@ -79,9 +79,9 @@ public class KubeflowClient {
    * list all jobs with default parameters
    *
    * @return list of job
-   * @throws ClientException
+   * @throws KubeflowException
    */
-  public List<Job> listJobs() throws ClientException {
+  public List<Job> listJobs() throws KubeflowException {
     return listJobs(this.defaultNamespace);
   }
 
@@ -91,9 +91,9 @@ public class KubeflowClient {
    * @param namespace object name and auth scope, such as for teams and projects (optional, default
    *     to 'default')
    * @return list of job
-   * @throws ClientException
+   * @throws KubeflowException
    */
-  public List<Job> listJobs(String namespace) throws ClientException {
+  public List<Job> listJobs(String namespace) throws KubeflowException {
     return listJobs(namespace, null, null, null);
   }
 
@@ -108,11 +108,11 @@ public class KubeflowClient {
    * @param includeUninitialized If true, partially initialized resources are included in the
    *     response. (optional)
    * @return list of job
-   * @throws ClientException
+   * @throws KubeflowException
    */
   public List<Job> listJobs(
       String namespace, String labelSelector, Integer limit, Boolean includeUninitialized)
-      throws ClientException {
+      throws KubeflowException {
     try {
       V1alpha2TFJobList list =
           this.api.listNamespacedTFJob(
@@ -134,7 +134,7 @@ public class KubeflowClient {
 
       return jobs;
     } catch (ApiException e) {
-      throw new ClientException("Cannot connect to kubernetes api: " + e.getMessage());
+      throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
     }
   }
 
@@ -143,9 +143,9 @@ public class KubeflowClient {
    *
    * @param name name of job
    * @return success or not
-   * @throws ApiException
+   * @throws KubeflowException
    */
-  public void deleteJob(String name) throws ClientException {
+  public void deleteJob(String name) throws KubeflowException {
     deleteJob(name, this.defaultNamespace);
   }
 
@@ -155,18 +155,18 @@ public class KubeflowClient {
    * @param name name of this job
    * @param namespace namespace of this job
    * @return success or not
-   * @throws ClientException
+   * @throws KubeflowException
    */
-  public void deleteJob(String name, String namespace) throws ClientException {
+  public void deleteJob(String name, String namespace) throws KubeflowException {
     try {
       V1DeleteOptions options = new V1DeleteOptions();
       V1Status status =
           this.api.deleteNamespacedTFJob(name, namespace, options, null, null, null, null);
       if (!status.getStatus().equals("success")) {
-        throw new ClientException("Failed to delete job: " + status.getMessage());
+        throw new KubeflowException("Failed to delete job: " + status.getMessage());
       }
     } catch (ApiException e) {
-      throw new ClientException("Cannot connect to kubernetes api: " + e.getMessage());
+      throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
     }
   }
 
@@ -175,9 +175,9 @@ public class KubeflowClient {
    *
    * @param name name of this job
    * @param job new configuration of this job
-   * @throws ClientException
+   * @throws KubeflowException
    */
-  public void updateJob(String name, Job job) throws ClientException {
+  public void updateJob(String name, Job job) throws KubeflowException {
     updateJob(name, this.defaultNamespace, job);
   }
 
@@ -187,13 +187,13 @@ public class KubeflowClient {
    * @param name name of this job
    * @param namespace namespace of this job
    * @param job new configuration of this job
-   * @throws ClientException
+   * @throws KubeflowException
    */
-  public void updateJob(String name, String namespace, Job job) throws ClientException {
+  public void updateJob(String name, String namespace, Job job) throws KubeflowException {
     try {
       job.setTfjob(this.api.patchNamespacedTFJob(name, namespace, job, null));
     } catch (ApiException e) {
-      throw new ClientException("Cannot connect to kubernetes api: " + e.getMessage());
+      throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
     }
   }
 }
