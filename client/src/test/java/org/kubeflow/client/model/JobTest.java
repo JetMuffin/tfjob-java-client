@@ -33,7 +33,9 @@ public class JobTest {
             .command("python test.py")
             .args("--train_tfrecords=train --test_tfrecords=test")
             .env("RESOURCE_PATH", "file:///data");
-    Job job = new Job().name("test_job").ps(ps).worker(worker);
+    Job job = new Job().user("test").name("test_job").ps(ps).worker(worker);
+
+    assertEquals(job.getUser(), "test");
 
     V1alpha2TFJob tfjob = job.getTfjob();
 
