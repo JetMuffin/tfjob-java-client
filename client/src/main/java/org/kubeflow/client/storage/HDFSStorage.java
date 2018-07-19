@@ -54,7 +54,9 @@ public class HDFSStorage implements Storage {
     }
 
     FSDataOutputStream fsDataOutputStream = fs.create(remotePath);
-
     IOUtils.copy(fileInputStream, fsDataOutputStream);
+
+    fsDataOutputStream.close();
+    fileInputStream.close();
   }
 }
