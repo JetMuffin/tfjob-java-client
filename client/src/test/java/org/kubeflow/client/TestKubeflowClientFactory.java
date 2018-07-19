@@ -7,6 +7,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import org.junit.Test;
 import org.kubeflow.client.model.JobConstants;
+import org.kubeflow.client.storage.HDFSStorage;
 import org.kubeflow.client.util.KubeConfig;
 
 public class TestKubeflowClientFactory {
@@ -42,5 +43,16 @@ public class TestKubeflowClientFactory {
 
     String expectedNamespace = "new-default";
     assertEquals(client.getDefaultNamespace(), expectedNamespace);
+  }
+
+  @Test
+  public void testNewClientWithDefaultNamespace() throws IOException {
+    KubeflowClient client = KubeflowClientFactory.newInstance().defaultNamespace("test");
+    assertEquals(client.getDefaultNamespace(), "test");
+  }
+
+  @Test
+  public void testNewClientWithStorage() throws IOException {
+    KubeflowClientFactory.newInstance().storage(new HDFSStorage("hdfs://localhost:8020"));
   }
 }

@@ -1,14 +1,20 @@
 package org.kubeflow.client.model;
 
+import static org.kubeflow.client.model.JobConstants.SCRIPT_REMOTE_PATH_PREFIX;
+
 import io.kubernetes.client.models.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.kubeflow.client.models.V1alpha2TFJob;
 import org.kubeflow.client.models.V1alpha2TFJobSpec;
+import org.kubeflow.client.util.JobUtil;
 
 public class Job {
   private V1alpha2TFJob tfjob;
 
   private String script;
+  private String uuid = JobUtil.generateUUID();
 
   public Job() {
     this.tfjob =
@@ -34,10 +40,15 @@ public class Job {
 
   public String getUser() {
     Map<String, String> labels = this.tfjob.getMetadata().getLabels();
+    if (labels == null) return null;
     if (labels.containsKey("user")) {
       return labels.get("user");
     }
     return null;
+  }
+
+  public String getUUID() {
+    return this.uuid;
   }
 
   public Job name(String name) {
@@ -98,6 +109,36 @@ public class Job {
   public TFReplica getWorker() {
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME));
+  }
+
+  /**
+   * Path to access script in remote storage backend in the form of
+   * `/sigma/user/namespace/name/uuid/script`
+   *
+   * @return this path
+   */
+  public String getRemoteScriptPath() {
+    if (this.getUser() == null
+        || this.getNamespace() == null
+        || this.getName() == null
+        || this.getScript() == null
+        || this.getUUID() == null) {
+      return null;
+    }
+    String file = Paths.get(this.getScript()).getFileName().toString();
+
+    Path remotePath =
+        Paths.get(
+            SCRIPT_REMOTE_PATH_PREFIX,
+            this.getUser(),
+            this.getNamespace(),
+            this.getName(),
+            this.getUUID(),
+            file);
+
+    // Paths.get reads `path.separator` from system property, and use backslash rather than
+    // slash if run on Windows, so we restrict the separator here.
+    return remotePath.toString().replace("\\", "/");
   }
 
   public V1alpha2TFJob getTfjob() {

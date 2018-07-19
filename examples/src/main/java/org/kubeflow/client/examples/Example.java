@@ -5,12 +5,14 @@ import org.kubeflow.client.KubeflowClient;
 import org.kubeflow.client.KubeflowClientFactory;
 import org.kubeflow.client.model.Job;
 import org.kubeflow.client.model.TFReplica;
+import org.kubeflow.client.storage.HDFSStorage;
 
 public class Example {
   public static void main(String[] args) {
     try {
       KubeflowClient client =
           KubeflowClientFactory.newInstanceFromConfig("/home/mofeng.cj/kubeconfig");
+      client.storage(new HDFSStorage("hdfs://100.81.153.173:8020"));
 
       TFReplica ps =
           new TFReplica()
@@ -20,7 +22,6 @@ public class Example {
               .image(
                   "reg.docker.alibaba-inc.com/pai-tensorflow/tensorflow-build:1.4.0-PAI1805u1-D1530175766-cpu")
               .env("HADOOP_HDFS_HOME", "/usr/local/hadoop")
-              .env("RESOURCE_PATH", "hdfs://100.81.153.173:8020/tmp/a.tar.gz")
               .env("ENTRY_FILE", "mnist_hdfs.py")
               .args(
                   "--train_tfrecords=hdfs://100.81.153.173:8020/tmp/train.tfrecords --test_tfrecords=hdfs://100.81.153.173:8020/tmp/test.tfrecords");
@@ -32,16 +33,22 @@ public class Example {
               .image(
                   "reg.docker.alibaba-inc.com/pai-tensorflow/tensorflow-build:1.4.0-PAI1805u1-D1530175766-cpu")
               .env("HADOOP_HDFS_HOME", "/usr/local/hadoop")
-              .env("RESOURCE_PATH", "hdfs://100.81.153.173:8020/tmp/a.tar.gz")
               .env("ENTRY_FILE", "mnist_hdfs.py")
               .args(
                   "--train_tfrecords=hdfs://100.81.153.173:8020/tmp/train.tfrecords --test_tfrecords=hdfs://100.81.153.173:8020/tmp/test.tfrecords");
-      Job job = new Job().name("sdk-job").ps(ps).worker(worker).cleanupPolicy("running");
+      Job job =
+          new Job()
+              .name("sdk-job")
+              .user("mofeng")
+              .ps(ps)
+              .worker(worker)
+              .cleanupPolicy("running")
+              .script("/home/mofeng.cj/train.tar.gz");
       client.submitJob(job);
 
       List<Job> jobs = client.listJobs();
       for (Job j : jobs) {
-        System.out.println(j);
+        System.out.println(j.getName());
       }
     } catch (Exception e) {
       e.printStackTrace();
