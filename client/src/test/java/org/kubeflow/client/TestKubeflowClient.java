@@ -1,5 +1,7 @@
 package org.kubeflow.client;
 
+import static junit.framework.TestCase.assertEquals;
+
 import java.io.IOException;
 import org.junit.Before;
 import org.junit.Test;
@@ -40,5 +42,52 @@ public class TestKubeflowClient {
             .ps(new TFReplica().replicas(1))
             .worker(new TFReplica().replicas(1));
     this.client.submitJob(job);
+  }
+
+  @Test
+  public void testJobWithBothScriptAndRemoteScript() throws IOException {
+    try {
+      Job job =
+          new Job()
+              .name("test")
+              .script("local-fake")
+              .remoteScript("remote-fake")
+              .user("me")
+              .ps(new TFReplica().replicas(1))
+              .worker(new TFReplica().replicas(1));
+      this.client.submitJob(job);
+    } catch (KubeflowException e) {
+      assertEquals(e.getMessage(), "Cannot use both 'script and 'remoteScrit'");
+    }
+  }
+
+  @Test
+  public void testJobWithNoScriptAndRemoteScript() throws IOException {
+    try {
+      Job job =
+          new Job()
+              .name("test")
+              .user("me")
+              .ps(new TFReplica().replicas(1))
+              .worker(new TFReplica().replicas(1));
+      this.client.submitJob(job);
+    } catch (KubeflowException e) {
+      assertEquals(e.getMessage(), "Must specify one of 'script' and 'remoteScript'.");
+    }
+  }
+
+  @Test
+  public void testJobWithoutUser() throws IOException {
+    try {
+      Job job =
+          new Job()
+              .name("test")
+              .script("local-fake")
+              .ps(new TFReplica().replicas(1))
+              .worker(new TFReplica().replicas(1));
+      this.client.submitJob(job);
+    } catch (KubeflowException e) {
+      assertEquals(e.getMessage(), "Missing required field 'user'.");
+    }
   }
 }

@@ -42,8 +42,8 @@ public class KubeflowClient {
     if (job.getScript() != null && job.getRemoteScript() != null) {
       throw new KubeflowException("Cannot use both 'script and 'remoteScrit'");
     }
-    if (job.getScript() == null) {
-      throw new KubeflowException("Invalid job: missing 'script' field.");
+    if (job.getUser() == null) {
+      throw new KubeflowException("Missing required field 'user'.");
     }
     if (job.getPs() == null || job.getPs().getReplicas() <= 0) {
       throw new KubeflowException("Must specify at least one PS.");
@@ -96,21 +96,19 @@ public class KubeflowClient {
           job.generateName(DEFAULT_GENERATE_NAME);
         }
 
-        // submit script to remote storage backend
-        String remoteScriptPath;
+        String remoteScriptURI;
         if (job.getScript() != null) {
-          remoteScriptPath = job.getRemoteScriptPath(this.storage.getPrefix());
+          // submit script to remote storage backend
+          String remoteScriptPath = job.getRemoteScriptPath(this.storage.getPrefix());
+          this.storage.upload(job.getScript(), remoteScriptPath);
+          remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
         } else if (job.getRemoteScript() != null) {
-          remoteScriptPath = job.getRemoteScript();
+          remoteScriptURI = job.getRemoteScript();
         } else {
           throw new KubeflowException("Must specify one of 'script' and 'remoteScript'.");
         }
-        if (remoteScriptPath != null) {
-          this.storage.upload(job.getScript(), remoteScriptPath);
-        }
 
         // set `RESOURCE_PATH` env to TFReplicas
-        String remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
         job.getPs().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
         job.getWorker().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
 

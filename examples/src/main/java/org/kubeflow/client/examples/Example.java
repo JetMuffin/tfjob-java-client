@@ -42,7 +42,9 @@ public class Example {
               .ps(ps)
               .worker(worker)
               .cleanupPolicy("running")
-              .script("/home/mofeng.cj/train.tar.gz");
+              //              .script("/home/mofeng.cj/train.tar.gz");
+              .remoteScript(
+                  "hdfs://100.81.153.173:8020/tmp/mofeng/jian-kube/tfjob/ea870217_7c17_4296_88be_8797d363c2fd/train.tar.gz");
       client.submitJob(job);
 
       List<Job> jobs = client.listJobs();

@@ -91,7 +91,7 @@ public class Job {
     return this.script;
   }
 
-  public Job remoteScript(String script) {
+  public Job remoteScript(String remoteScript) {
     this.remoteScript = remoteScript;
     return this;
   }
