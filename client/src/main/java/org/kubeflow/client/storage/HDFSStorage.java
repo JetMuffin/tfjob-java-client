@@ -1,5 +1,7 @@
 package org.kubeflow.client.storage;
 
+import static org.kubeflow.client.model.JobConstants.DEFAULT_SCRIPT_REMOTE_PATH_PREFIX;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.URI;
@@ -12,14 +14,29 @@ import org.apache.hadoop.fs.Path;
 public class HDFSStorage implements Storage {
   private Configuration conf;
 
+  private String prefix = DEFAULT_SCRIPT_REMOTE_PATH_PREFIX;
+
   public HDFSStorage() {
     this.conf = new Configuration();
   }
 
-  public HDFSStorage(String defaultFS) {
-    this.conf = new Configuration();
+  public HDFSStorage defaultFS(String defaultFS) {
     this.conf.set("fs.defaultFS", defaultFS);
     this.conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+    return this;
+  }
+
+  public String getDefaultFS(String defaultFS) {
+    return this.conf.get("fs.defaultFS");
+  }
+
+  public HDFSStorage prefix(String prefix) {
+    this.prefix = prefix;
+    return this;
+  }
+
+  public String getPrefix() {
+    return this.prefix;
   }
 
   public String getScheme() {

@@ -31,7 +31,7 @@ public class TestKubeflowClient {
 
   @Test(expected = IOException.class)
   public void testJobWithInvalidLocalScriptPath() throws KubeflowException, IOException {
-    this.client.storage(new HDFSStorage("hdfs://localhost:9000"));
+    this.client.storage(new HDFSStorage().defaultFS("hdfs://localhost:9000"));
     Job job =
         new Job()
             .name("test")

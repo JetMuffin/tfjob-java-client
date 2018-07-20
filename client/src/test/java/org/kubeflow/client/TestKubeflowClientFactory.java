@@ -52,6 +52,7 @@ public class TestKubeflowClientFactory {
 
   @Test
   public void testNewClientWithStorage() throws IOException {
-    KubeflowClientFactory.newInstance().storage(new HDFSStorage("hdfs://localhost:8020"));
+    KubeflowClientFactory.newInstance()
+        .storage(new HDFSStorage().defaultFS("hdfs://localhost:8020"));
   }
 }

@@ -2,7 +2,6 @@ package org.kubeflow.client.model;
 
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
-import static org.kubeflow.client.model.JobConstants.SCRIPT_REMOTE_PATH_PREFIX;
 
 import io.kubernetes.client.models.*;
 import java.nio.file.Path;
@@ -138,11 +137,11 @@ public class Job {
 
   /**
    * Path to access script in remote storage backend in the form of
-   * `/sigma/<user>/<namespace>/tfjob/<uuid>/`
+   * `/<prefix>/<user>/<namespace>/tfjob/<uuid>/`
    *
    * @return this path
    */
-  public String getRemoteScriptPath() {
+  public String getRemoteScriptPath(String prefix) {
     if (this.getUser() == null
         || this.getNamespace() == null
         || this.getScript() == null
@@ -153,7 +152,7 @@ public class Job {
 
     Path remotePath =
         Paths.get(
-            SCRIPT_REMOTE_PATH_PREFIX,
+            prefix,
             this.getUser(),
             this.getNamespace(),
             KUBEFLOW_JOB_KIND.toLowerCase(),

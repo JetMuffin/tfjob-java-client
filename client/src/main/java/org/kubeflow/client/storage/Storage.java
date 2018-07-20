@@ -5,6 +5,13 @@ import java.io.IOException;
 public interface Storage {
 
   /**
+   * return prefix of remote script path.
+   *
+   * @return prefix
+   */
+  public String getPrefix();
+
+  /**
    * return the scheme of storage backend, e.g. hdfs://
    *
    * @return scheme
