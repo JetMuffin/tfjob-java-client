@@ -36,6 +36,12 @@ public class KubeflowClient {
   }
 
   private boolean validateJob(Job job) throws KubeflowException {
+    if (job.getScript() == null && job.getRemoteScript() == null) {
+      throw new KubeflowException("Must specify one of 'script' and 'remoteScript'.");
+    }
+    if (job.getScript() != null && job.getRemoteScript() != null) {
+      throw new KubeflowException("Cannot use both 'script and 'remoteScrit'");
+    }
     if (job.getScript() == null) {
       throw new KubeflowException("Invalid job: missing 'script' field.");
     }
@@ -91,7 +97,14 @@ public class KubeflowClient {
         }
 
         // submit script to remote storage backend
-        String remoteScriptPath = job.getRemoteScriptPath(this.storage.getPrefix());
+        String remoteScriptPath;
+        if (job.getScript() != null) {
+          remoteScriptPath = job.getRemoteScriptPath(this.storage.getPrefix());
+        } else if (job.getRemoteScript() != null) {
+          remoteScriptPath = job.getRemoteScript();
+        } else {
+          throw new KubeflowException("Must specify one of 'script' and 'remoteScript'.");
+        }
         if (remoteScriptPath != null) {
           this.storage.upload(job.getScript(), remoteScriptPath);
         }

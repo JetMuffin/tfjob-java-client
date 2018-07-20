@@ -15,6 +15,7 @@ public class Job {
   private V1alpha2TFJob tfjob;
 
   private String script;
+  private String remoteScript;
   private String uuid = JobUtil.generateUUID();
 
   public Job() {
@@ -88,6 +89,15 @@ public class Job {
 
   public String getScript() {
     return this.script;
+  }
+
+  public Job remoteScript(String script) {
+    this.remoteScript = remoteScript;
+    return this;
+  }
+
+  public String getRemoteScript() {
+    return this.remoteScript;
   }
 
   public Job cleanupPolicy(String cleanupPolicy) {
