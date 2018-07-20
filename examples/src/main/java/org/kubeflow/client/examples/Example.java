@@ -12,7 +12,8 @@ public class Example {
     try {
       KubeflowClient client =
           KubeflowClientFactory.newInstanceFromConfig("/home/mofeng.cj/kubeconfig");
-      client.storage(new HDFSStorage().defaultFS("hdfs://100.81.153.173:8020").resourceRootDir("/tmp"));
+      client.storage(
+          new HDFSStorage().defaultFS("hdfs://100.81.153.173:8020").resourceRootDir("/tmp"));
 
       TFReplica ps =
           new TFReplica()
