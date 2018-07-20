@@ -12,6 +12,6 @@ public final class JobConstants {
   public static final String KUBEFLOW_LABEL_USER = "user";
 
   public static final String DEFAULT_NAMESPACE = "default";
-  public static final String DEFAULT_SCRIPT_REMOTE_PATH_PREFIX = "/tmp";
+  public static final String DEFAULT_REMOTE_ROOT_DIR = "/tmp";
   public static final String DEFAULT_GENERATE_NAME = "tfjob-";
 }

@@ -9,7 +9,7 @@ public interface Storage {
    *
    * @return prefix
    */
-  public String getPrefix();
+  public String getResourceRootDir();
 
   /**
    * return the scheme of storage backend, e.g. hdfs://

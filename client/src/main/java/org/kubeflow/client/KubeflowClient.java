@@ -99,7 +99,7 @@ public class KubeflowClient {
         String remoteScriptURI;
         if (job.getScript() != null) {
           // submit script to remote storage backend
-          String remoteScriptPath = job.getRemoteScriptPath(this.storage.getPrefix());
+          String remoteScriptPath = job.getRemoteScriptPath(this.storage.getResourceRootDir());
           this.storage.upload(job.getScript(), remoteScriptPath);
           remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
         } else if (job.getRemoteScript() != null) {
