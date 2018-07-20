@@ -1,14 +1,22 @@
 package org.kubeflow.client.model;
 
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
+
 import io.kubernetes.client.models.*;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Map;
 import org.kubeflow.client.models.V1alpha2TFJob;
 import org.kubeflow.client.models.V1alpha2TFJobSpec;
+import org.kubeflow.client.util.JobUtil;
 
 public class Job {
   private V1alpha2TFJob tfjob;
 
   private String script;
+  private String remoteScript;
+  private String uuid = JobUtil.generateUUID();
 
   public Job() {
     this.tfjob =
@@ -34,10 +42,17 @@ public class Job {
 
   public String getUser() {
     Map<String, String> labels = this.tfjob.getMetadata().getLabels();
-    if (labels.containsKey("user")) {
-      return labels.get("user");
+    if (labels == null) {
+      return null;
+    }
+    if (labels.containsKey(KUBEFLOW_LABEL_USER)) {
+      return labels.get(KUBEFLOW_LABEL_USER);
     }
     return null;
+  }
+
+  public String getUUID() {
+    return this.uuid;
   }
 
   public Job name(String name) {
@@ -47,6 +62,15 @@ public class Job {
 
   public String getName() {
     return this.tfjob.getMetadata().getName();
+  }
+
+  public Job generateName(String generateName) {
+    this.tfjob.getMetadata().generateName(generateName);
+    return this;
+  }
+
+  public String getGenerateName(String generateName) {
+    return this.tfjob.getMetadata().getGenerateName();
   }
 
   public Job namespace(String namespace) {
@@ -67,6 +91,15 @@ public class Job {
     return this.script;
   }
 
+  public Job remoteScript(String remoteScript) {
+    this.remoteScript = remoteScript;
+    return this;
+  }
+
+  public String getRemoteScript() {
+    return this.remoteScript;
+  }
+
   public Job cleanupPolicy(String cleanupPolicy) {
     this.tfjob.getSpec().cleanPodPolicy(cleanupPolicy);
     return this;
@@ -84,6 +117,12 @@ public class Job {
   }
 
   public TFReplica getPs() {
+    if (!this.tfjob
+        .getSpec()
+        .getTfReplicaSpecs()
+        .containsKey(JobConstants.KUBEFLOW_PS_REPLICA_NAME)) {
+      return null;
+    }
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_PS_REPLICA_NAME));
   }
@@ -96,8 +135,43 @@ public class Job {
   }
 
   public TFReplica getWorker() {
+    if (!this.tfjob
+        .getSpec()
+        .getTfReplicaSpecs()
+        .containsKey(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME)) {
+      return null;
+    }
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME));
+  }
+
+  /**
+   * Path to access script in remote storage backend in the form of
+   * `/<prefix>/<user>/<namespace>/tfjob/<uuid>/`
+   *
+   * @return this path
+   */
+  public String getRemoteScriptPath(String prefix) {
+    if (this.getUser() == null
+        || this.getNamespace() == null
+        || this.getScript() == null
+        || this.getUUID() == null) {
+      return null;
+    }
+    String file = Paths.get(this.getScript()).getFileName().toString();
+
+    Path remotePath =
+        Paths.get(
+            prefix,
+            this.getUser(),
+            this.getNamespace(),
+            KUBEFLOW_JOB_KIND.toLowerCase(),
+            this.getUUID(),
+            file);
+
+    // Paths.get reads `path.separator` from system property, and use backslash rather than
+    // slash if run on Windows, so we restrict the separator here.
+    return remotePath.toString().replace("\\", "/");
   }
 
   public V1alpha2TFJob getTfjob() {

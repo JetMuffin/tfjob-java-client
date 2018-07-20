@@ -75,4 +75,25 @@ public class JobTest {
     assert envs.containsKey("RESOURCE_PATH");
     assertEquals(envs.get("RESOURCE_PATH"), "file:///data");
   }
+
+  @Test
+  public void testJobUUID() {
+    Job job = new Job();
+    assertNotNull(job.getUUID());
+  }
+
+  @Test
+  public void testInvalidJobToGetRemoteScriptPath() {
+    Job job = new Job();
+    assertNull(job.getRemoteScriptPath("/sigma"));
+  }
+
+  @Test
+  public void testValidJobToGetRemoteScriptPath() {
+    Job job =
+        new Job().user("usertest").name("train").namespace("work").script("/tmp/train.tar.gz");
+    String expect = "/sigma/usertest/work/tfjob/" + job.getUUID() + "/train.tar.gz";
+
+    assertEquals(expect, job.getRemoteScriptPath("/sigma"));
+  }
 }

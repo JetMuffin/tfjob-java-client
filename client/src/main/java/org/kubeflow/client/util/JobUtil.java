@@ -28,6 +28,11 @@ public class JobUtil {
     return sb.toString();
   }
 
+  /**
+   * generate a universal unique id
+   *
+   * @return uuid
+   */
   public static String generateUUID() {
     UUID uuid = UUID.randomUUID();
     String str = uuid.toString();

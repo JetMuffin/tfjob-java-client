@@ -1,7 +1,11 @@
 package org.kubeflow.client;
 
+import static org.kubeflow.client.model.JobConstants.DEFAULT_GENERATE_NAME;
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_RESOURCE_PATH_ENV;
+
 import io.kubernetes.client.models.V1DeleteOptions;
 import io.kubernetes.client.models.V1Status;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import org.kubeflow.client.apis.KubeflowOrgV1alpha2Api;
@@ -10,10 +14,13 @@ import org.kubeflow.client.model.Job;
 import org.kubeflow.client.model.JobConstants;
 import org.kubeflow.client.models.V1alpha2TFJob;
 import org.kubeflow.client.models.V1alpha2TFJobList;
+import org.kubeflow.client.storage.Storage;
 
 public class KubeflowClient {
-  private KubeflowOrgV1alpha2Api api;
   private String defaultNamespace = JobConstants.DEFAULT_NAMESPACE;
+
+  private KubeflowOrgV1alpha2Api api;
+  private Storage storage;
 
   KubeflowClient(KubeflowOrgV1alpha2Api api) {
     this.api = api;
@@ -29,11 +36,14 @@ public class KubeflowClient {
   }
 
   private boolean validateJob(Job job) throws KubeflowException {
-    if (job.getName() == null) {
-      throw new KubeflowException("Invalid job: missing 'name' field.");
+    if (job.getScript() == null && job.getRemoteScript() == null) {
+      throw new KubeflowException("Must specify one of 'script' and 'remoteScript'.");
     }
-    if (job.getScript() == null) {
-      throw new KubeflowException("Invalid job: missing 'script' field.");
+    if (job.getScript() != null && job.getRemoteScript() != null) {
+      throw new KubeflowException("Cannot use both 'script and 'remoteScrit'");
+    }
+    if (job.getUser() == null) {
+      throw new KubeflowException("Missing required field 'user'.");
     }
     if (job.getPs() == null || job.getPs().getReplicas() <= 0) {
       throw new KubeflowException("Must specify at least one PS.");
@@ -45,6 +55,16 @@ public class KubeflowClient {
     return true;
   }
 
+  public KubeflowClient defaultNamespace(String defaultNamespace) {
+    this.defaultNamespace = defaultNamespace;
+    return this;
+  }
+
+  public KubeflowClient storage(Storage storage) {
+    this.storage = storage;
+    return this;
+  }
+
   /**
    * create a job
    *
@@ -52,7 +72,7 @@ public class KubeflowClient {
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-  public void submitJob(Job job) throws KubeflowException {
+  public void submitJob(Job job) throws KubeflowException, IOException {
     submitJob(job, this.defaultNamespace);
   }
 
@@ -64,10 +84,36 @@ public class KubeflowClient {
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    */
-  public void submitJob(Job job, String namespace) throws KubeflowException {
+  public void submitJob(Job job, String namespace) throws KubeflowException, IOException {
+    // validate this job
     if (validateJob(job)) {
-      V1alpha2TFJob tfjob = job.getTfjob();
+      if (this.storage == null) {
+        throw new KubeflowException("Need to specify a storage backend, e.g. hdfs.");
+      }
       try {
+        job.namespace(namespace);
+        if (job.getName() == null) {
+          job.generateName(DEFAULT_GENERATE_NAME);
+        }
+
+        String remoteScriptURI;
+        if (job.getScript() != null) {
+          // submit script to remote storage backend
+          String remoteScriptPath = job.getRemoteScriptPath(this.storage.getResourceRootDir());
+          this.storage.upload(job.getScript(), remoteScriptPath);
+          remoteScriptURI = this.storage.getAddress() + remoteScriptPath;
+        } else if (job.getRemoteScript() != null) {
+          remoteScriptURI = job.getRemoteScript();
+        } else {
+          throw new KubeflowException("Must specify one of 'script' and 'remoteScript'.");
+        }
+
+        // set `RESOURCE_PATH` env to TFReplicas
+        job.getPs().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
+        job.getWorker().env(KUBEFLOW_RESOURCE_PATH_ENV, remoteScriptURI);
+
+        // submit job to kubeflow
+        V1alpha2TFJob tfjob = job.getTfjob();
         job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
       } catch (ApiException e) {
         throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
