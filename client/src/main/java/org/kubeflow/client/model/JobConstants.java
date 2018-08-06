@@ -14,4 +14,5 @@ public final class JobConstants {
   public static final String DEFAULT_NAMESPACE = "default";
   public static final String DEFAULT_REMOTE_ROOT_DIR = "/tmp";
   public static final String DEFAULT_GENERATE_NAME = "tfjob-";
+  public static final int DEFAULT_CLEANUP_TTL_SECONDS = 604800;
 }

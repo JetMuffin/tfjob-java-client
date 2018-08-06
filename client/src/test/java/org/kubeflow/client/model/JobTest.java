@@ -1,6 +1,9 @@
 package org.kubeflow.client.model;
 
 import static org.junit.Assert.*;
+import static org.kubeflow.client.model.JobConstants.DEFAULT_CLEANUP_TTL_SECONDS;
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_API_VERSION;
+import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
 
 import io.kubernetes.client.models.V1Container;
 import io.kubernetes.client.models.V1EnvVar;
@@ -14,7 +17,18 @@ import org.kubeflow.client.models.V1alpha2TFReplicaSpec;
 public class JobTest {
 
   @Test
-  public void testBuild() {
+  public void testBuildWithDefaultParams() {
+    Job job = new Job();
+
+    V1alpha2TFJob tfjob = job.getTfjob();
+    assertEquals(tfjob.getApiVersion(), KUBEFLOW_API_VERSION);
+    assertEquals(
+        tfjob.getSpec().getTtlSecondsAfterFinishing().intValue(), DEFAULT_CLEANUP_TTL_SECONDS);
+    assertEquals(tfjob.getKind(), KUBEFLOW_JOB_KIND);
+  }
+
+  @Test
+  public void testBuildWithParams() {
     TFReplica ps =
         new TFReplica()
             .replicas(1)
@@ -37,7 +51,9 @@ public class JobTest {
 
     V1alpha2TFJob tfjob = job.getTfjob();
 
-    assertEquals(tfjob.getSpec().getTtlSecondsAfterFinishing().intValue(), job.getTtlSecondsAfterFinishing());
+    assertEquals(
+        tfjob.getSpec().getTtlSecondsAfterFinishing().intValue(),
+        job.getTtlSecondsAfterFinishing());
 
     assertEquals(tfjob.getMetadata().getName(), job.getName());
     assert tfjob.getSpec().getTfReplicaSpecs().containsKey("PS");
