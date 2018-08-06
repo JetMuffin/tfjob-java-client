@@ -1,5 +1,6 @@
 package org.kubeflow.client.model;
 
+import static org.kubeflow.client.model.JobConstants.DEFAULT_CLEANUP_TTL_SECONDS;
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
 import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
 
@@ -23,7 +24,7 @@ public class Job {
         new V1alpha2TFJob()
             .apiVersion(JobConstants.KUBEFLOW_API_VERSION)
             .kind(JobConstants.KUBEFLOW_JOB_KIND)
-            .spec(new V1alpha2TFJobSpec())
+            .spec(new V1alpha2TFJobSpec().ttlSecondsAfterFinishing(DEFAULT_CLEANUP_TTL_SECONDS))
             .metadata(new V1ObjectMeta());
   }
 
@@ -110,12 +111,12 @@ public class Job {
   }
 
   public Job ttlSecondsAfterFinishing(int ttl) {
-      this.tfjob.getSpec().ttlSecondsAfterFinishing(ttl);
-      return this;
+    this.tfjob.getSpec().ttlSecondsAfterFinishing(ttl);
+    return this;
   }
 
   public int getTtlSecondsAfterFinishing() {
-      return this.tfjob.getSpec().getTtlSecondsAfterFinishing();
+    return this.tfjob.getSpec().getTtlSecondsAfterFinishing();
   }
 
   public Job ps(TFReplica replica) {
