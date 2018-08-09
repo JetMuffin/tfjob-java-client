@@ -18,9 +18,6 @@ public class Example {
 
   public static void main(String[] args) {
     try {
-      KubeflowClient client = KubeflowClientFactory.newInstance();
-      client.storage(new HDFSStorage().defaultFS(hdfsBackendURL).resourceRootDir(resourceRootDir));
-
       CommandLineParser parser = new DefaultParser();
       Options options = new Options();
       options.addOption("n", "name", true, "");
@@ -31,6 +28,7 @@ public class Example {
       options.addOption("a", "args", true, "");
       options.addOption("c", "cpu", true, "");
       options.addOption("m", "memory", true, "");
+      options.addOption("k", "kubeconfig", true, "");
       options.addOption("h", "help", false, "");
 
       CommandLine commandLine = parser.parse(options, args);
@@ -40,6 +38,15 @@ public class Example {
         help.printHelp("EXAMPLE example test", "", options, "");
         return;
       }
+
+      KubeflowClient client;
+      if (commandLine.hasOption("k")) {
+        client =
+            KubeflowClientFactory.newInstanceFromConfig(commandLine.getOptionValue("kubeconfig"));
+      } else {
+        client = KubeflowClientFactory.newInstance();
+      }
+      client.storage(new HDFSStorage().defaultFS(hdfsBackendURL).resourceRootDir(resourceRootDir));
 
       TFReplica ps =
           new TFReplica()

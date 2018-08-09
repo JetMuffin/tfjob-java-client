@@ -63,7 +63,7 @@ public class HDFSStorage implements Storage {
   public void upload(String src, String dest) throws IOException {
     FileSystem fs = FileSystem.get(this.conf);
     Path localPath = new Path(src);
-    FileInputStream fileInputStream = new FileInputStream(localPath.getName());
+    FileInputStream fileInputStream = new FileInputStream(localPath.toString());
 
     Path remotePath = new Path(dest);
     if (!fs.exists(remotePath.getParent())) {
