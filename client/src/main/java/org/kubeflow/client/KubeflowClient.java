@@ -71,6 +71,7 @@ public class KubeflowClient {
    * @param job (required)
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
+   * @throws IOException If failed to find local path
    */
   public void submitJob(Job job) throws KubeflowException, IOException {
     submitJob(job, this.defaultNamespace);
@@ -83,6 +84,7 @@ public class KubeflowClient {
    * @param namespace object name and auth scope, such as for teams and projects
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
+   * @throws IOException If failed to find local path
    */
   public void submitJob(Job job, String namespace) throws KubeflowException, IOException {
     // validate this job
@@ -125,7 +127,8 @@ public class KubeflowClient {
    * list all jobs with default parameters
    *
    * @return list of job
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public List<Job> listJobs() throws KubeflowException {
     return listJobs(this.defaultNamespace);
@@ -137,7 +140,8 @@ public class KubeflowClient {
    * @param namespace object name and auth scope, such as for teams and projects (optional, default
    *     to 'default')
    * @return list of job
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public List<Job> listJobs(String namespace) throws KubeflowException {
     return listJobs(namespace, null, null, null);
@@ -154,7 +158,8 @@ public class KubeflowClient {
    * @param includeUninitialized If true, partially initialized resources are included in the
    *     response. (optional)
    * @return list of job
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public List<Job> listJobs(
       String namespace, String labelSelector, Integer limit, Boolean includeUninitialized)
@@ -189,7 +194,8 @@ public class KubeflowClient {
    *
    * @param name name of job
    * @return success or not
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public void deleteJob(String name) throws KubeflowException {
     deleteJob(name, this.defaultNamespace);
@@ -201,7 +207,8 @@ public class KubeflowClient {
    * @param name name of this job
    * @param namespace namespace of this job
    * @return success or not
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public void deleteJob(String name, String namespace) throws KubeflowException {
     try {
@@ -221,7 +228,8 @@ public class KubeflowClient {
    *
    * @param name name of this job
    * @param job new configuration of this job
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public void updateJob(String name, Job job) throws KubeflowException {
     updateJob(name, this.defaultNamespace, job);
@@ -233,7 +241,8 @@ public class KubeflowClient {
    * @param name name of this job
    * @param namespace namespace of this job
    * @param job new configuration of this job
-   * @throws KubeflowException
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
    */
   public void updateJob(String name, String namespace, Job job) throws KubeflowException {
     try {
