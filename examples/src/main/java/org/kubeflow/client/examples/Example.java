@@ -69,7 +69,7 @@ public class Example {
               .cpu(
                   Double.parseDouble(
                       commandLine.getOptionValue("cpu", String.valueOf(defaultCpus))))
-              .cpu(
+              .memory(
                   Double.parseDouble(
                       commandLine.getOptionValue("memory", String.valueOf(defaultMemory))))
               .image(baseImage)
