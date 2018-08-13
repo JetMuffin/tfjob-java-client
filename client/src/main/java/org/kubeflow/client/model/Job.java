@@ -24,8 +24,12 @@ public class Job {
         new V1alpha2TFJob()
             .apiVersion(JobConstants.KUBEFLOW_API_VERSION)
             .kind(JobConstants.KUBEFLOW_JOB_KIND)
-            .spec(new V1alpha2TFJobSpec().ttlSecondsAfterFinishing(DEFAULT_CLEANUP_TTL_SECONDS))
+            .spec(new V1alpha2TFJobSpec())
             .metadata(new V1ObjectMeta());
+
+    // default values
+    this.user(System.getProperty("user.name"))
+        .ttlSecondsAfterFinishing(DEFAULT_CLEANUP_TTL_SECONDS);
   }
 
   public Job(V1alpha2TFJob tfjob) {

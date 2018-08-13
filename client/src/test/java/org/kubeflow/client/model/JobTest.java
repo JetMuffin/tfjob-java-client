@@ -112,4 +112,12 @@ public class JobTest {
 
     assertEquals(expect, job.getRemoteScriptPath("/sigma"));
   }
+
+  @Test
+  public void testJobWithDefaultSettings() {
+    Job job = new Job();
+
+    assertEquals(job.getUser(), System.getProperty("user.name"));
+    assertEquals(job.getTtlSecondsAfterFinishing(), DEFAULT_CLEANUP_TTL_SECONDS);
+  }
 }

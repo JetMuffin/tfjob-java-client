@@ -85,6 +85,7 @@ public class TestKubeflowClient {
               .script("local-fake")
               .ps(new TFReplica().replicas(1))
               .worker(new TFReplica().replicas(1));
+      job.user(null);
       this.client.submitJob(job);
     } catch (KubeflowException e) {
       assertEquals(e.getMessage(), "Missing required field 'user'.");
