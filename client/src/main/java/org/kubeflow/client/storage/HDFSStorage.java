@@ -1,6 +1,9 @@
 package org.kubeflow.client.storage;
 
 import static org.kubeflow.client.model.JobConstants.DEFAULT_REMOTE_ROOT_DIR;
+import static org.kubeflow.client.storage.HDFSConstants.HDFS_IPC_CLIENT_CONNECT_MAX_RETRIES;
+import static org.kubeflow.client.storage.HDFSConstants.HDFS_IPC_CLIENT_CONNECT_TIMEOUT;
+import static org.kubeflow.client.storage.HDFSConstants.HFDS_IPC_CLIENT_CONNECT_RETRY_INTERVAL;
 
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -23,11 +26,23 @@ public class HDFSStorage implements Storage {
   public HDFSStorage defaultFS(String defaultFS) {
     this.conf.set("fs.defaultFS", defaultFS);
     this.conf.set("fs.hdfs.impl", org.apache.hadoop.hdfs.DistributedFileSystem.class.getName());
+    this.conf.set("ipc.client.connect.max.retries", Integer.toString(HDFS_IPC_CLIENT_CONNECT_MAX_RETRIES));
+    this.conf.set("ipc.client.connect.timeout", Integer.toString(HDFS_IPC_CLIENT_CONNECT_TIMEOUT));
+    this.conf.set("ipc.client.connect.retry.interval", Integer.toString(HFDS_IPC_CLIENT_CONNECT_RETRY_INTERVAL));
     return this;
   }
 
   public String getDefaultFS(String defaultFS) {
     return this.conf.get("fs.defaultFS");
+  }
+
+  public HDFSStorage addConfig(String key, String value) {
+      this.conf.set(key, value);
+      return this;
+  }
+
+  public String getConfig(String key) {
+      return this.conf.get(key);
   }
 
   public HDFSStorage resourceRootDir(String resourceRootDir) {
