@@ -163,6 +163,15 @@ public class TFReplica {
     return null;
   }
 
+  public TFReplica priority(int priority) {
+    this.spec.getTemplate().getSpec().priority(priority);
+    return this;
+  }
+
+  public int getPriority() {
+    return this.spec.getTemplate().getSpec().getPriority();
+  }
+
   public V1alpha2TFReplicaSpec getSpec() {
     return this.spec;
   }
