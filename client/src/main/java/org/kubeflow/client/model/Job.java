@@ -1,8 +1,6 @@
 package org.kubeflow.client.model;
 
-import static org.kubeflow.client.model.JobConstants.DEFAULT_CLEANUP_TTL_SECONDS;
-import static org.kubeflow.client.model.JobConstants.KUBEFLOW_JOB_KIND;
-import static org.kubeflow.client.model.JobConstants.KUBEFLOW_LABEL_USER;
+import static org.kubeflow.client.model.JobConstants.*;
 
 import io.kubernetes.client.models.*;
 import java.nio.file.Path;
@@ -124,6 +122,7 @@ public class Job {
   }
 
   public Job ps(TFReplica replica) {
+    replica.priority(DEFAULT_PS_PRIORITY);
     this.tfjob
         .getSpec()
         .putTfReplicaSpecsItem(JobConstants.KUBEFLOW_PS_REPLICA_NAME, replica.getSpec());
