@@ -31,6 +31,11 @@
             <version>${hadoop-version}</version>
         </dependency>
         <dependency>
+            <groupId>com.alibaba.pangu2</groupId>
+            <artifactId>hadoop-pangu2</artifactId>
+            <version>${pangu-version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-io</artifactId>
             <version>${commons-io.version}</version>
@@ -52,6 +57,7 @@
         <junit-version>4.12</junit-version>
         <log4j-version>2.11.0</log4j-version>
         <hadoop-version>2.8.4</hadoop-version>
+        <pangu-version>2.0.1.2</pangu-version>
         <commons-io.version>1.3.2</commons-io.version>
     </properties>
 
