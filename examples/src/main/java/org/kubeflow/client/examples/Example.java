@@ -9,6 +9,7 @@ import org.kubeflow.client.storage.HDFSStorage;
 
 public class Example {
   private static final String hdfsBackendURL = "hdfs://100.81.153.173:8020";
+  private static final String panguURL = "10.182.6.58";
   private static final String resourceRootDir = "/tmp";
   private static final String baseImage =
       "reg.docker.alibaba-inc.com/pai-tensorflow/tensorflow-build:1.4.0-PAI1805u1-D1530175766-cpu";
@@ -54,10 +55,9 @@ public class Example {
               .cpu(
                   Double.parseDouble(
                       commandLine.getOptionValue("cpu", String.valueOf(defaultCpus))))
-              .cpu(
+              .memory(
                   Double.parseDouble(
                       commandLine.getOptionValue("memory", String.valueOf(defaultMemory))))
-              .memory(defaultMemory)
               .image(baseImage)
               .env("HADOOP_HDFS_HOME", hadoopHome)
               .env("ENTRY_FILE", commandLine.getOptionValue("entry_file"))
