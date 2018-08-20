@@ -5,11 +5,11 @@ import org.kubeflow.client.KubeflowClient;
 import org.kubeflow.client.KubeflowClientFactory;
 import org.kubeflow.client.model.Job;
 import org.kubeflow.client.model.TFReplica;
-import org.kubeflow.client.storage.HDFSStorage;
+import org.kubeflow.client.storage.PanguStorage;
 
 public class Example {
   private static final String hdfsBackendURL = "hdfs://100.81.153.173:8020";
-  private static final String panguURL = "10.182.6.58";
+  private static final String panguURL = "pangu://AY-SIGMA-PAI";
   private static final String resourceRootDir = "/tmp";
   private static final String baseImage =
       "reg.docker.alibaba-inc.com/pai-tensorflow/tensorflow-build:1.4.0-PAI1805u1-D1530175766-cpu";
@@ -47,7 +47,7 @@ public class Example {
       } else {
         client = KubeflowClientFactory.newInstance();
       }
-      client.storage(new HDFSStorage().defaultFS(hdfsBackendURL).resourceRootDir(resourceRootDir));
+      client.storage(new PanguStorage().defaultFS(panguURL).resourceRootDir(resourceRootDir));
 
       TFReplica ps =
           new TFReplica()
