@@ -5,9 +5,11 @@ import static org.kubeflow.client.model.JobConstants.*;
 import io.kubernetes.client.models.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 import java.util.Map;
 import org.kubeflow.client.models.V1alpha2TFJob;
 import org.kubeflow.client.models.V1alpha2TFJobSpec;
+import org.kubeflow.client.models.V1alpha2TFReplicaStatus;
 import org.kubeflow.client.util.JobUtil;
 
 public class Job {
@@ -156,6 +158,22 @@ public class Job {
     }
     return new TFReplica(
         this.tfjob.getSpec().getTfReplicaSpecs().get(JobConstants.KUBEFLOW_WORKER_REPLICA_NAME));
+  }
+
+  public Map<String, Map<String, Integer>> getTFReplicaStatus() {
+    Map<String, Map<String, Integer>> result = new HashMap<>();
+    result.put(KUBEFLOW_PS_REPLICA_NAME, new HashMap<String, Integer>());
+    result.put(KUBEFLOW_WORKER_REPLICA_NAME, new HashMap<String, Integer>());
+
+    Map<String, V1alpha2TFReplicaStatus> status = this.tfjob.getStatus().getTfReplicaStatuses();
+
+    for (Map.Entry<String, V1alpha2TFReplicaStatus> entry : status.entrySet()) {
+      result.get(entry.getKey()).put("active", entry.getValue().getActive());
+      result.get(entry.getKey()).put("failed", entry.getValue().getFailed());
+      result.get(entry.getKey()).put("succeed", entry.getValue().getSucceeded());
+    }
+
+    return result;
   }
 
   /**

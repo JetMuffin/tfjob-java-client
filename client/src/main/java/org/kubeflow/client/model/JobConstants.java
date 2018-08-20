@@ -10,6 +10,7 @@ public final class JobConstants {
   public static final String KUBEFLOW_RESOURCE_MEMORY = "memory";
   public static final String KUBEFLOW_RESOURCE_PATH_ENV = "RESOURCE_PATH";
   public static final String KUBEFLOW_LABEL_USER = "user";
+  public static final String KUBEFLOW_JOB_LABEL_SELECTOR = "tf_job_name=";
 
   public static final String DEFAULT_NAMESPACE = "default";
   public static final String DEFAULT_REMOTE_ROOT_DIR = "/tmp";

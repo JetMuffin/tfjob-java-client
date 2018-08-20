@@ -8,6 +8,7 @@ import io.kubernetes.client.models.V1Status;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import org.kubeflow.client.apis.KubeflowOrgV1alpha2Api;
 import org.kubeflow.client.exception.KubeflowException;
 import org.kubeflow.client.model.Job;
@@ -69,12 +70,13 @@ public class KubeflowClient {
    * create a job
    *
    * @param job (required)
+   * @return name of this job
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    * @throws IOException If failed to find local path
    */
-  public void submitJob(Job job) throws KubeflowException, IOException {
-    submitJob(job, this.defaultNamespace);
+  public String submitJob(Job job) throws KubeflowException, IOException {
+    return submitJob(job, this.defaultNamespace);
   }
 
   /**
@@ -82,11 +84,12 @@ public class KubeflowClient {
    *
    * @param job (required)
    * @param namespace object name and auth scope, such as for teams and projects
+   * @return name of this job
    * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
    *     response body
    * @throws IOException If failed to find local path
    */
-  public void submitJob(Job job, String namespace) throws KubeflowException, IOException {
+  public String submitJob(Job job, String namespace) throws KubeflowException, IOException {
     // validate this job
     if (validateJob(job)) {
       if (this.storage == null) {
@@ -117,10 +120,14 @@ public class KubeflowClient {
         // submit job to kubeflow
         V1alpha2TFJob tfjob = job.getTfjob();
         job.setTfjob(this.api.createNamespacedTFJob(namespace, tfjob, "true"));
+
+        return job.getName();
       } catch (ApiException e) {
         throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
       }
     }
+
+    return null;
   }
 
   /**
@@ -187,6 +194,71 @@ public class KubeflowClient {
     } catch (ApiException e) {
       throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
     }
+  }
+
+  /**
+   * Query the information of given job
+   *
+   * @param name The name of job
+   * @return First job of query result
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
+   */
+  public Job queryJob(String name) throws KubeflowException {
+    return this.queryJob(name, this.defaultNamespace);
+  }
+
+  /**
+   * Query the information for given job
+   *
+   * @param name The name of job
+   * @param namespace The namespace to query job
+   * @return First job of query result
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
+   */
+  public Job queryJob(String name, String namespace) throws KubeflowException {
+    try {
+      V1alpha2TFJob tfjob = this.api.readNamespacedTFJob(name, namespace, null);
+      if (tfjob == null) {
+        return null;
+      } else {
+        return new Job(tfjob);
+      }
+    } catch (ApiException e) {
+      throw new KubeflowException("Cannot connect to kubernetes api: " + e.getMessage());
+    }
+  }
+
+  /**
+   * Query the pod status of given job
+   *
+   * @param name The name of this job
+   * @return job status if the job exists, null if job does not exist
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
+   */
+  public Map<String, Map<String, Integer>> queryJobStatus(String name) throws KubeflowException {
+    return queryJobStatus(name, this.defaultNamespace);
+  }
+
+  /**
+   * Query the pod status of given job
+   *
+   * @param name The name of this job
+   * @param namespace The namespace to query this job
+   * @return job status if this job exists, and return null if job does not exit
+   * @throws KubeflowException If fail to call the API, e.g. server error or cannot deserialize the
+   *     response body
+   */
+  public Map<String, Map<String, Integer>> queryJobStatus(String name, String namespace)
+      throws KubeflowException {
+    Job job = this.queryJob(name, namespace);
+    if (job == null) {
+      return null;
+    }
+
+    return job.getTFReplicaStatus();
   }
 
   /**
